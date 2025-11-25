@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useCart, isUserLoggedIn } from "../context/CartContext";
+import { FaComment, FaUser, FaClock } from "react-icons/fa";
 
 export default function FoodDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart, setIsCartOpen } = useCart();
   const [food, setFood] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [user, setUser] = useState(null);
 
   // Giảm số lượng, tối thiểu = 1
 const decrease = () => {
@@ -17,11 +25,101 @@ const increase = () => {
   setQuantity(quantity + 1);
 };
 
+// Xử lý gửi bình luận
+const handleSubmitComment = (e) => {
+  e.preventDefault();
+  
+  if (!isUserLoggedIn()) {
+    if (window.confirm("Bạn cần đăng nhập để bình luận. Bạn có muốn đăng nhập ngay?")) {
+      navigate("/login");
+    }
+    return;
+  }
+
+  if (!newComment.trim()) {
+    alert("Vui lòng nhập nội dung bình luận!");
+    return;
+  }
+
+  setSubmitting(true);
+
+  fetch("http://localhost/feane/api/add_comment.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      food_id: parseInt(id),
+      user_id: user.id,
+      username: user.username,
+      comment: newComment.trim(),
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        setComments([data.comment, ...comments]);
+        setNewComment("");
+        alert("Bình luận đã được thêm thành công!");
+      } else {
+        alert(data.message || "Không thể thêm bình luận!");
+      }
+      setSubmitting(false);
+    })
+    .catch((err) => {
+      console.error("Error adding comment:", err);
+      alert("Có lỗi xảy ra khi thêm bình luận!");
+      setSubmitting(false);
+    });
+};
+
+// Format date
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+  // Load user info
   useEffect(() => {
-    fetch(`http://localhost/api/get_food.php?id=${id}`)
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+
+  // Load food details
+  useEffect(() => {
+    fetch(`http://localhost/feane/api/get_food.php?id=${id}`)
       .then((res) => res.json())
       .then((data) => setFood(data))
       .catch((err) => console.error(err));
+  }, [id]);
+
+  // Load comments
+  useEffect(() => {
+    if (id) {
+      setLoadingComments(true);
+      fetch(`http://localhost/feane/api/get_comments.php?food_id=${id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setComments(data.comments);
+          }
+          setLoadingComments(false);
+        })
+        .catch((err) => {
+          console.error("Error loading comments:", err);
+          setLoadingComments(false);
+        });
+    }
   }, [id]);
 
     if (!food) {
@@ -140,7 +238,18 @@ const increase = () => {
             </span>
             </div>
             {/* BUTTON — NEON */}
-            <button className="bg-yellow-400 text-black px-16 py-4 rounded-full text-xl font-bold 
+            <button 
+              onClick={() => {
+                if (!isUserLoggedIn()) {
+                  if (window.confirm("Bạn cần đăng nhập để thêm món vào giỏ hàng. Bạn có muốn đăng nhập ngay?")) {
+                    navigate("/login");
+                  }
+                  return;
+                }
+                addToCart(food, quantity);
+                setIsCartOpen(true);
+              }}
+              className="bg-yellow-400 text-black px-16 py-4 rounded-full text-xl font-bold 
               shadow-[0_0_25px_rgba(255,200,0,0.5)]
               hover:bg-yellow-300 hover:shadow-[0_0_35px_rgba(255,200,0,0.8)]
               transition-all">
@@ -148,6 +257,96 @@ const increase = () => {
             </button>
           </div>
 
+        </div>
+
+        {/* PHẦN BÌNH LUẬN */}
+        <div className="mt-16 bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
+          <div className="flex items-center gap-3 mb-6">
+            <FaComment className="text-yellow-400" size={24} />
+            <h2 className="text-3xl font-bold text-yellow-400">
+              Bình luận ({comments.length})
+            </h2>
+          </div>
+
+          {/* Form bình luận - chỉ hiển thị nếu đã đăng nhập */}
+          {isUserLoggedIn() ? (
+            <form onSubmit={handleSubmitComment} className="mb-8">
+              <div className="bg-white/5 rounded-xl p-4 border border-yellow-500/20">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Viết bình luận của bạn..."
+                  className="w-full bg-transparent text-white placeholder-gray-400 outline-none resize-none mb-4"
+                  rows="4"
+                  maxLength={1000}
+                />
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">
+                    {newComment.length}/1000 ký tự
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={submitting || !newComment.trim()}
+                    className="bg-yellow-400 text-black px-6 py-2 rounded-full font-semibold hover:bg-yellow-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? "Đang gửi..." : "Gửi bình luận"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          ) : (
+            <div className="bg-white/5 rounded-xl p-6 border border-yellow-500/20 mb-8 text-center">
+              <p className="text-gray-400 mb-4">
+                Bạn cần đăng nhập để bình luận
+              </p>
+              <button
+                onClick={() => navigate("/login")}
+                className="bg-yellow-400 text-black px-6 py-2 rounded-full font-semibold hover:bg-yellow-300 transition"
+              >
+                Đăng nhập ngay
+              </button>
+            </div>
+          )}
+
+          {/* Danh sách bình luận */}
+          <div className="space-y-4">
+            {loadingComments ? (
+              <div className="text-center py-8 text-gray-400">
+                Đang tải bình luận...
+              </div>
+            ) : comments.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+              </div>
+            ) : (
+              comments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-yellow-500/30 transition"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-yellow-400/20 flex items-center justify-center flex-shrink-0">
+                      <FaUser className="text-yellow-400" size={20} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="font-bold text-lg text-yellow-300">
+                          {comment.username}
+                        </h4>
+                        <div className="flex items-center gap-1 text-gray-400 text-sm">
+                          <FaClock size={12} />
+                          <span>{formatDate(comment.created_at)}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+                        {comment.comment}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 

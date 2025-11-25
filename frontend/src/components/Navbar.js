@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { FaUser, FaShoppingCart, FaSearch } from "react-icons/fa"; // Bộ icon
 import { Link } from "react-router-dom"; // Điều hướng giữa các trang mà không reload
+import { useCart } from "../context/CartContext";
 
 // ========================= //
 // 📌 COMPONENT NAVBAR
@@ -21,13 +22,21 @@ export default function Navbar() {
   const [active, setActive] = useState("Home");
 
   const [user, setUser] = useState(null);
+  
+  const { setIsCartOpen, setIsSearchOpen, getTotalItems } = useCart();
 
     // Lấy thông tin user từ localStorage khi component được mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
 
-    if (storedUser) {
-      setUser(JSON.parse(storedUser)); 
+    if (storedUser && isLoggedIn === "true") {
+      try {
+        setUser(JSON.parse(storedUser)); 
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        setUser(null);
+      }
     }
   }, []);
 
@@ -112,8 +121,21 @@ export default function Navbar() {
 
 
 
-          <FaShoppingCart className="cursor-pointer text-lg hover:text-yellow-400 transition" />
-          <FaSearch className="cursor-pointer text-lg hover:text-yellow-400 transition" />
+          <div className="relative">
+            <FaShoppingCart 
+              className="cursor-pointer text-lg hover:text-yellow-400 transition" 
+              onClick={() => setIsCartOpen(true)}
+            />
+            {getTotalItems() > 0 && (
+              <span className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {getTotalItems()}
+              </span>
+            )}
+          </div>
+          <FaSearch 
+            className="cursor-pointer text-lg hover:text-yellow-400 transition" 
+            onClick={() => setIsSearchOpen(true)}
+          />
 
           {/* Nút màu vàng */}
           <button className="bg-yellow-400 text-black px-6 py-2 rounded-full hover:bg-yellow-300 transition font-semibold">
@@ -148,8 +170,15 @@ export default function Navbar() {
           {/* 3 icon nằm ngang trong mobile */}
           <div className="flex justify-center gap-5 py-2">
             <FaUser />
-            <FaShoppingCart />
-            <FaSearch />
+            <div className="relative">
+              <FaShoppingCart onClick={() => setIsCartOpen(true)} />
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {getTotalItems()}
+                </span>
+              )}
+            </div>
+            <FaSearch onClick={() => setIsSearchOpen(true)} />
           </div>
 
           {/* Nút Order Online cho mobile */}

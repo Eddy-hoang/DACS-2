@@ -19,7 +19,7 @@ export default function AdminEditFood() {
 
   // Lấy thông tin món ăn hiện tại
   useEffect(() => {
-    fetch(`http://localhost/api/get_food.php?id=${id}`)
+    fetch(`http://localhost/feane/api/get_food.php?id=${id}`)
       .then((res) => res.json())
       .then((data) => {
         setFormData({
@@ -59,7 +59,7 @@ export default function AdminEditFood() {
       data.append("image", image);
     }
 
-    fetch("http://localhost/api/update_food.php", {
+    fetch("http://localhost/feane/api/update_food.php", {
       method: "POST",
       body: data,
     })

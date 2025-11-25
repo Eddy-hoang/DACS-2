@@ -33,7 +33,7 @@ export default function AdminAddFood() {
     data.append("type", formData.type);
     data.append("image", image);
 
-    fetch("http://localhost/api/add_food.php", {
+    fetch("http://localhost/feane/api/add_food.php", {
       method: "POST",
       body: data,
     })

@@ -14,7 +14,7 @@ export default function AdminContacts() {
 
   const fetchContacts = () => {
     setLoading(true);
-    fetch("http://localhost/api/contacts.php")
+    fetch("http://localhost/feane/api/contacts.php")
       .then((res) => res.json())
       .then((data) => {
         setContacts(data);
@@ -31,7 +31,7 @@ export default function AdminContacts() {
       return;
     }
 
-    fetch("http://feane.test/api/contacts.php", {
+    fetch("http://localhost/feane/api/contacts.php", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),

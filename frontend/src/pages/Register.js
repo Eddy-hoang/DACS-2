@@ -24,7 +24,7 @@ export default function Register() {
     data.append("email", form.email);
     data.append("password", form.password);
 
-    fetch("http://localhost/api/register.php", {
+    fetch("http://localhost/feane/api/register.php", {
       method: "POST",
       body: data,
     })

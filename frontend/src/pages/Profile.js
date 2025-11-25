@@ -14,6 +14,8 @@ export default function Profile() {
   // Xử lý đăng xuất
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("cart"); // Xóa giỏ hàng khi đăng xuất
     navigate("/login");
   };
 

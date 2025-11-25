@@ -8,7 +8,7 @@ export default function AdminLogin() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    fetch("http://localhost/api/admin_login.php", {
+    fetch("http://localhost/feane/api/admin_login.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

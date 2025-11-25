@@ -17,12 +17,12 @@ export default function AdminDashboard() {
     if (!isLoggedIn) window.location.href = "/admin/login";
 
     // GỌI API LẤY THỐNG KÊ
-    fetch("http://localhost/api/dashboard_stats.php")
+    fetch("http://localhost/feane/api/dashboard_stats.php")
     .then((res) => res.json())
     .then((data) => setStats(data))
     .catch((err) => console.log(err));
 
-    fetch("http://localhost/api/recent_activity.php")
+    fetch("http://localhost/feane/api/recent_activity.php")
       .then((res) => res.json())
       .then((data) => setActivities(data))
       .catch((err) => console.log(err));

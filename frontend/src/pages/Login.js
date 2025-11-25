@@ -11,7 +11,7 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    fetch("http://localhost/api/login.php", {
+    fetch("http://localhost/feane/api/login.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -21,8 +21,9 @@ export default function Login() {
         setMessage(data.message);
 
         if (data.success) {
-          localStorage.setItem("user", data.user.id);
-          localStorage.setItem("userName", data.user.name);
+          // Lưu thông tin user đầy đủ dưới dạng JSON
+          localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("isLoggedIn", "true");
 
           setTimeout(() => {
             navigate("/");

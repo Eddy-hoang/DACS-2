@@ -19,7 +19,7 @@ export default function Booking() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    fetch("http://localhost/api/book_table.php", {
+    fetch("http://localhost/feane/api/book_table.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),

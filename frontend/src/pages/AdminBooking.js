@@ -14,7 +14,7 @@ export default function AdminBookings() {
 
   const fetchBookings = () => {
     setLoading(true);
-    fetch("http://localhost/api/bookings.php")
+    fetch("http://localhost/feane/api/bookings.php")
       .then((res) => res.json())
       .then((data) => {
         setBookings(data);
@@ -42,7 +42,7 @@ export default function AdminBookings() {
       return;
     }
 
-    fetch("http://localhost/api/bookings.php", {
+    fetch("http://localhost/feane/api/bookings.php", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
@@ -63,7 +63,7 @@ export default function AdminBookings() {
   };
 
   const updateStatus = (id, status) => {
-    fetch("http://localhost/api/bookings.php", {
+    fetch("http://localhost/feane/api/bookings.php", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status }),

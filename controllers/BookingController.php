@@ -16,6 +16,11 @@ class BookingController {
 
         $booking = new Booking($conn);
 
+        // Thêm user_id nếu có
+        if (isset($data["user_id"]) && $data["user_id"] > 0) {
+            $booking->user_id = intval($data["user_id"]);
+        }
+        
         $booking->name    = $data["name"];
         $booking->phone   = $data["phone"];
         $booking->email   = $data["email"];
@@ -76,6 +81,23 @@ class BookingController {
             "success" => false,
             "message" => "❌ Lỗi khi xóa đơn đặt bàn!"
         ];
+    }
+
+    // Lấy bookings của user
+    public function getUserBookings($conn, $user_id, $email = null) {
+        $booking = new Booking($conn);
+        
+        // Ưu tiên lấy theo user_id
+        if ($user_id && $user_id > 0) {
+            $bookings = $booking->getByUserId($user_id);
+        } else if ($email) {
+            // Fallback: lấy theo email nếu chưa có user_id
+            $bookings = $booking->getByEmail($email);
+        } else {
+            $bookings = [];
+        }
+        
+        return $bookings;
     }
 }
 ?>

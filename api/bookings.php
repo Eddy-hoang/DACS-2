@@ -28,7 +28,11 @@ if ($method === "GET") {
 } elseif ($method === "PUT") {
 
     $raw = file_get_contents("php://input");
-    parse_str($raw, $data); // FIX LỖI PUT JSON
+    $data = json_decode($raw, true);
+
+    if (!is_array($data)) {
+        parse_str($raw, $data);
+    }
 
     $id = $data["id"] ?? null;
     $status = $data["status"] ?? null;
@@ -38,7 +42,11 @@ if ($method === "GET") {
 } elseif ($method === "DELETE") {
 
     $raw = file_get_contents("php://input");
-    parse_str($raw, $data); // FIX DELETE JSON
+    $data = json_decode($raw, true);
+
+    if (!is_array($data)) {
+        parse_str($raw, $data);
+    }
 
     $id = $data["id"] ?? null;
 
